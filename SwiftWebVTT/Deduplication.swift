@@ -1,6 +1,6 @@
 import Foundation
 
-extension WebVTTParser {
+public extension WebVTTParser {
     /// Filter out duplicated cues.
     ///
     /// Mainly for YouTube ASR captions.

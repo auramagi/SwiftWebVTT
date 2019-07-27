@@ -11,6 +11,10 @@ public struct WebVTT {
     }
     
     public let cues: [Cue]
+    
+    public init(cues: [Cue]) {
+        self.cues = cues
+    }
 }
 
 public extension WebVTT.Timing {
