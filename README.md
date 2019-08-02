@@ -16,6 +16,17 @@ As part of parsing text content of cues, this project implements a custom parser
 Saving files in WebVTT format and showing cues on screen is considered outside of scope of this project.
 
 
+## Installation
+
+#### Carthage
+
+Put `github "auramagi/SwiftWebVTT"` in your `Cartfile`.
+
+#### CocoaPods
+
+Put `pod 'SwiftWebVTT'` in your `Podfile`.
+
+
 ## Usage
 
 ```swift
