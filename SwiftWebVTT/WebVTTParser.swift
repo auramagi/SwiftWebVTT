@@ -323,7 +323,7 @@ public class CueTextParser {
     }
 }
 
-public class NodeTreeParser {
+public class CueTextTree {
     public class Node {
         public let type: NodeType
         
@@ -417,5 +417,63 @@ public class NodeTreeParser {
         if (current.type == type) || (type == .ruby && current.type == .rubyText) {
             stack.removeLast()
         }
+    }
+}
+
+public extension CueTextTree.Node {
+    func attributedString(font: UIFont) -> NSAttributedString {
+        let result = NSMutableAttributedString(string: "")
+        switch self.type {
+        case .text(let text):
+            result.append(NSAttributedString(string: text))
+        case .timestamp(_):
+            break
+        case .voice:
+            let text = "\(annotation ?? ""): "
+            let traits = font.fontDescriptor.symbolicTraits.union([.traitBold])
+            guard let descriptor = font.fontDescriptor.withSymbolicTraits(traits) else { break }
+            let attributes = [NSAttributedString.Key.font: UIFont(descriptor: descriptor, size: font.pointSize)]
+            result.append(NSAttributedString(string: text, attributes: attributes))
+        default: break
+        }
+        
+        children
+            .map { $0.attributedString(font: font) }
+            .forEach { result.append($0) }
+        
+        result.addAttributes(attributes(font: font), range: NSRange(location: 0, length: result.length))
+        return result
+    }
+    
+    func attributes(font: UIFont) -> [NSAttributedString.Key: Any] {
+        switch self.type {
+        case .italic:
+            let traits = font.fontDescriptor.symbolicTraits.union([.traitItalic])
+            guard let descriptor = font.fontDescriptor.withSymbolicTraits(traits) else { break }
+            return [.font: UIFont(descriptor: descriptor, size: font.pointSize)]
+        case .bold:
+            let traits = font.fontDescriptor.symbolicTraits.union([.traitBold])
+            guard let descriptor = font.fontDescriptor.withSymbolicTraits(traits) else { break }
+            return [.font: UIFont(descriptor: descriptor, size: font.pointSize)]
+        case .underline:
+            return [.underlineStyle: NSUnderlineStyle.single.rawValue]
+        case .ruby:
+            break
+        case .rubyText:
+            break
+        case .voice:
+            break
+        case .language:
+            break
+        case .text(_):
+            break
+        case .timestamp(_):
+            break
+        case .root:
+            break
+        case .class:
+            break
+        }
+        return [:]
     }
 }
