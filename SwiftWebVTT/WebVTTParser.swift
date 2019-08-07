@@ -177,21 +177,21 @@ fileprivate class CueInfoParser {
     }
 }
 
-fileprivate class CueTextParser {
-    enum Token {
+public class CueTextParser {
+    public enum Token {
         case text(String)
-        case tagStart(String)
+        case tagStart(String, [String], String?)
         case tagEnd(String)
         case timestamp(String)
     }
     
     let scanner: CustomScanner
     private let references: HTMLCharacterReferences
-    init(string: String, references: HTMLCharacterReferences) {
+    public init(string: String, references: HTMLCharacterReferences) {
         scanner = CustomScanner(string: string)
         self.references = references
     }
-    func parse() -> [Token] {
+    public func parse() -> [Token] {
         var tokens: [Token] = []
         while !scanner.isAtEnd {
             let token = parseToken()
@@ -249,7 +249,7 @@ fileprivate class CueTextParser {
                     state = .timestamp
                 case ">":
                     scanner.skip(-1)
-                    return .tagStart("")
+                    return .tagStart("", classes, nil)
                 default:
                     result = [c]
                     state = .startTag
@@ -264,7 +264,7 @@ fileprivate class CueTextParser {
                 case ".":
                     state = .startTagClass
                 case ">":
-                    return .tagStart(String(result))
+                    return .tagStart(String(result), classes, buffer.isEmpty ? nil : String(buffer))
                 default:
                     result.append(c)
                 }
@@ -283,7 +283,9 @@ fileprivate class CueTextParser {
                     buffer = []
                     state = .startTagClass
                 case ">":
-                    return .tagStart(String(result))
+                    classes.append(String(buffer))
+                    buffer = []
+                    return .tagStart(String(result), classes, nil)
                 default:
                     buffer.append(c)
                 }
@@ -293,7 +295,7 @@ fileprivate class CueTextParser {
                     state = .HTMLCharacterReferenceInAnnotation
                 case ">":
                     buffer = Array(String(buffer).trimmingCharacters(in: WebVTTParser.spaceDelimiterSet))
-                    return .tagStart(String(result))
+                    return .tagStart(String(result), classes, buffer.isEmpty ? nil : String(buffer))
                 default:
                     buffer.append(c)
                 }
@@ -321,3 +323,99 @@ fileprivate class CueTextParser {
     }
 }
 
+public class NodeTreeParser {
+    public class Node {
+        public let type: NodeType
+        
+        public let classes: [String]
+        public let annotation: String?
+        
+        public var children: [Node] = []
+        
+        init(type: NodeType, classes: [String] = [], annotation: String? = nil) {
+            self.type = type
+            self.classes = classes
+            self.annotation = annotation
+        }
+    }
+    
+    public enum NodeType: Equatable {
+        // Root node
+        case root
+        
+        // Internal nodes
+        case `class`
+        case italic
+        case bold
+        case underline
+        case ruby
+        case rubyText
+        case voice
+        case language
+        
+        // Leaves
+        case text(String)
+        case timestamp(String)
+        
+        // Only for internal nodes
+        init?(_ tag: String) {
+            switch tag {
+            case "c": self = .class
+            case "i": self = .italic
+            case "b": self = .bold
+            case "u": self = .underline
+            case "ruby": self = .ruby
+            case "rt": self = .rubyText
+            case "v": self = .voice
+            case "lang": self = .language
+            default: return nil
+            }
+        }
+        
+        var isLeaf: Bool {
+            switch self {
+            case .text(_), .timestamp(_): return true
+            default: return false
+            }
+        }
+    }
+    
+    public let root = Node(type: .root)
+    private var stack: [Node] = []
+    private var current: Node { return stack.last ?? root }
+    
+    public init(_ tokens: [CueTextParser.Token]) {
+        for token in tokens {
+            switch token {
+            case .text(let text):
+                attach(.text(text))
+            case .timestamp(let timestamp):
+                attach(.timestamp(timestamp))
+            case .tagStart(let tag, let classes, let annotation):
+                guard let type = NodeType(tag) else { break }
+                let node = Node(type: type, classes: classes, annotation: annotation)
+                attach(node)
+            case .tagEnd(let tag):
+                close(tag)
+            }
+        }
+        stack = []
+    }
+    
+    fileprivate func attach(_ type: NodeType) {
+        attach(Node(type: type))
+    }
+    
+    fileprivate func attach(_ node: Node) {
+        current.children.append(node)
+        guard !node.type.isLeaf else { return }
+        stack.append(node)
+    }
+    
+    fileprivate func close(_ tag: String) {
+        guard let type = NodeType(tag) else { return }
+        if (current.type == type) || (type == .ruby && current.type == .rubyText) {
+            stack.removeLast()
+        }
+    }
+}

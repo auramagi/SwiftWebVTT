@@ -1,6 +1,6 @@
 import Foundation
 
-internal struct HTMLCharacterReferences {
+public struct HTMLCharacterReferences {
     /// Entity names for character substitution.
     /// - Example: ['gt': '>'], ['amp': '&']
     struct ReferenceNamed: Codepoints, Decodable {
