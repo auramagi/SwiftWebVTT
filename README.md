@@ -9,7 +9,8 @@ Originally written as part of [Skipjack](https://skipjack.app).
 
 ## Functionality
 
-Functionality is currently limited to extracting a list of cues with their timings and text content. Extracting regions, stylesheets etc. is not implemented. Text styling such as bold, italics, ruby etc. is also not implemented.
+Functionality is currently limited to extracting a list of cues with their timings and text content. Cue text can be converted to plain-text `String` or rich `NSAttributedString`, and the latter supports text styling such as bold, italics, and underline.
+Extracting regions, stylesheets, timestamps in cue content, and language tags is not implemented. 
 
 As part of parsing text content of cues, this project implements a custom parser for HTML Character Entities based on the [HTML 5.1 specification](https://www.w3.org/TR/html51/syntax.html#consume-a-character-reference).
 
@@ -34,6 +35,14 @@ Put `pod 'SwiftWebVTT'` in your `Podfile`.
 let parser = WebVTTParser(string: fileContents)
 let webVTT = try? parser.parse()
 // webVTT?.cues holds an array of cues
+
+let text = webVTT?.cues.map({ $0.text }).joined()
+// `text` is a `String?` with all the text in the file
+
+let font = UIFont.preferredFont(forTextStyle: .body)
+let attributedText = NSMutableAttributedString(string: "")
+webVTT?.cues.map({ $0.attributedText(baseFont: font) }).forEach({ attributedText.append($0) })
+// `text` is an `NSAttributedString` with all the text in the file in rich format
 ```
 
 #### Making automatically-generated WebVTT from YouTube readable
@@ -46,8 +55,7 @@ This doesn't have a negative effect when presenting caption-by-caption, but make
 
 ```swift
 // var webVTT: WebVTT // A parsed file
-let filteredCues = WebVTTParser.deduplicateCues(webVTT.cues)
-webVTT = WebVTT(cues: filteredCues)
+webVTT = webVtt.deduplicated()
 ```
 
 #### HTML Character References

@@ -1,10 +1,10 @@
 import Foundation
 
-public extension WebVTTParser {
+public extension WebVTT {
     /// Filter out duplicated cues.
     ///
     /// Mainly for YouTube ASR captions.
-    static func deduplicateCues(_ cues: [WebVTT.Cue]) -> [WebVTT.Cue] {
+    func deduplicated() -> WebVTT {
         var filteredCues: [WebVTT.Cue] = []
         var shownLines: [Substring] = []
         var lastEnd: Int = 0
@@ -28,6 +28,6 @@ public extension WebVTTParser {
             shownLines = lines
             filteredCues.append(WebVTT.Cue(timing: cue.timing, contents: WebVTT.Cue.Node(type: .text(text))))
         }
-        return filteredCues
+        return WebVTT(cues: filteredCues)
     }
 }
