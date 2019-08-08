@@ -60,6 +60,8 @@ public extension WebVTT.Cue.Node {
         case .text(let text): result += text
         case .voice: result += WebVTT.Cue.Node.voiceAnnotation(annotation)
         case .rubyText: return WebVTT.Cue.Node.rubyText(childrenText)
+        case .timestamp(_):
+            break
         default: break
         }
         result += childrenText
@@ -78,13 +80,17 @@ public extension WebVTT.Cue.Node {
         let result = NSMutableAttributedString(string: "")
         switch type {
         case .text(let text):
-            result.append(NSAttributedString(string: text))
-        case .timestamp(_):
-            break
+            let attributes = font.attributes(addingTraits: [])
+            result.append(NSAttributedString(string: text, attributes: attributes))
         case .voice:
             let text = WebVTT.Cue.Node.voiceAnnotation(annotation)
             let attributes = font.attributes(addingTraits: [.traitBold])
             result.append(NSAttributedString(string: text, attributes: attributes))
+        case .rubyText:
+            let attributes = font.attributes(addingTraits: [])
+            return NSAttributedString(string: WebVTT.Cue.Node.rubyText(childrenText), attributes: attributes)
+        case .timestamp(_):
+            break
         default: break
         }
         
@@ -102,28 +108,17 @@ public extension WebVTT.Cue.Node {
             return font.attributes(addingTraits: [.traitBold])
         case .underline:
             return [.underlineStyle: NSUnderlineStyle.single.rawValue]
-        case .ruby:
-            break
-        case .rubyText:
-            break
-        case .voice:
-            break
         case .language:
-            break
-        case .text(_):
-            break
-        case .timestamp(_):
-            break
-        case .root:
-            break
+            return [:]
         case .class:
-            break
+            return [:]
+        default: return [:]
         }
-        return [:]
     }
 }
 
 fileprivate extension WebVTT.Cue.NodeType {
+    // only internal nodes
     init?(_ tag: String) {
         switch tag {
         case "c": self = .class

@@ -37,12 +37,12 @@ let webVTT = try? parser.parse()
 // webVTT?.cues holds an array of cues
 
 let text = webVTT?.cues.map({ $0.text }).joined()
-// `text` is a `String?` with all the text in the file
+// text: String? is all the text in the file
 
 let font = UIFont.preferredFont(forTextStyle: .body)
 let attributedText = NSMutableAttributedString(string: "")
 webVTT?.cues.map({ $0.attributedText(baseFont: font) }).forEach({ attributedText.append($0) })
-// `text` is an `NSAttributedString` with all the text in the file in rich format
+// text: NSAttributedString is all the text in the file in rich format
 ```
 
 #### Making automatically-generated WebVTT from YouTube readable
