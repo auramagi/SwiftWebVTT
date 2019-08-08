@@ -46,19 +46,9 @@ public class WebVTTParser {
             let block = parseBlock(inHeader: false)
             
             if case .cue(let start, let end, let text)? = block {
-                let parsedText = CueTextParser(string: text, references: references)
-                    .parse()
-                    .compactMap {
-                        switch $0 {
-                        case .text(let text):
-                            return text
-                        default:
-                            return nil
-                        }
-                    }
-                    .joined()
+                let contents = CueTextParser(string: text, references: references).parse()
                 let timing = WebVTT.Timing(start: start, end: end)
-                cues.append(WebVTT.Cue(timing: timing, text: parsedText))
+                cues.append(WebVTT.Cue(timing: timing, contents: contents))
             }
             
             scanner.scanCharacters(from: WebVTTParser.newlineSet)
@@ -191,13 +181,13 @@ public class CueTextParser {
         scanner = CustomScanner(string: string)
         self.references = references
     }
-    public func parse() -> [Token] {
+    public func parse() -> WebVTT.Cue.Node {
         var tokens: [Token] = []
         while !scanner.isAtEnd {
             let token = parseToken()
             tokens.append(token)
         }
-        return tokens
+        return CueTextTreeParser().parse(tokens)
     }
     
     private func parseToken() -> Token {
@@ -320,160 +310,5 @@ public class CueTextParser {
             }
         }
         return .text(String(result))
-    }
-}
-
-public class CueTextTree {
-    public class Node {
-        public let type: NodeType
-        
-        public let classes: [String]
-        public let annotation: String?
-        
-        public var children: [Node] = []
-        
-        init(type: NodeType, classes: [String] = [], annotation: String? = nil) {
-            self.type = type
-            self.classes = classes
-            self.annotation = annotation
-        }
-    }
-    
-    public enum NodeType: Equatable {
-        // Root node
-        case root
-        
-        // Internal nodes
-        case `class`
-        case italic
-        case bold
-        case underline
-        case ruby
-        case rubyText
-        case voice
-        case language
-        
-        // Leaves
-        case text(String)
-        case timestamp(String)
-        
-        // Only for internal nodes
-        init?(_ tag: String) {
-            switch tag {
-            case "c": self = .class
-            case "i": self = .italic
-            case "b": self = .bold
-            case "u": self = .underline
-            case "ruby": self = .ruby
-            case "rt": self = .rubyText
-            case "v": self = .voice
-            case "lang": self = .language
-            default: return nil
-            }
-        }
-        
-        var isLeaf: Bool {
-            switch self {
-            case .text(_), .timestamp(_): return true
-            default: return false
-            }
-        }
-    }
-    
-    public let root = Node(type: .root)
-    private var stack: [Node] = []
-    private var current: Node { return stack.last ?? root }
-    
-    public init(_ tokens: [CueTextParser.Token]) {
-        for token in tokens {
-            switch token {
-            case .text(let text):
-                attach(.text(text))
-            case .timestamp(let timestamp):
-                attach(.timestamp(timestamp))
-            case .tagStart(let tag, let classes, let annotation):
-                guard let type = NodeType(tag) else { break }
-                let node = Node(type: type, classes: classes, annotation: annotation)
-                attach(node)
-            case .tagEnd(let tag):
-                close(tag)
-            }
-        }
-        stack = []
-    }
-    
-    fileprivate func attach(_ type: NodeType) {
-        attach(Node(type: type))
-    }
-    
-    fileprivate func attach(_ node: Node) {
-        current.children.append(node)
-        guard !node.type.isLeaf else { return }
-        stack.append(node)
-    }
-    
-    fileprivate func close(_ tag: String) {
-        guard let type = NodeType(tag) else { return }
-        if (current.type == type) || (type == .ruby && current.type == .rubyText) {
-            stack.removeLast()
-        }
-    }
-}
-
-public extension CueTextTree.Node {
-    func attributedString(font: UIFont) -> NSAttributedString {
-        let result = NSMutableAttributedString(string: "")
-        switch self.type {
-        case .text(let text):
-            result.append(NSAttributedString(string: text))
-        case .timestamp(_):
-            break
-        case .voice:
-            let text = "\(annotation ?? ""): "
-            let traits = font.fontDescriptor.symbolicTraits.union([.traitBold])
-            guard let descriptor = font.fontDescriptor.withSymbolicTraits(traits) else { break }
-            let attributes = [NSAttributedString.Key.font: UIFont(descriptor: descriptor, size: font.pointSize)]
-            result.append(NSAttributedString(string: text, attributes: attributes))
-        default: break
-        }
-        
-        children
-            .map { $0.attributedString(font: font) }
-            .forEach { result.append($0) }
-        
-        result.addAttributes(attributes(font: font), range: NSRange(location: 0, length: result.length))
-        return result
-    }
-    
-    func attributes(font: UIFont) -> [NSAttributedString.Key: Any] {
-        switch self.type {
-        case .italic:
-            let traits = font.fontDescriptor.symbolicTraits.union([.traitItalic])
-            guard let descriptor = font.fontDescriptor.withSymbolicTraits(traits) else { break }
-            return [.font: UIFont(descriptor: descriptor, size: font.pointSize)]
-        case .bold:
-            let traits = font.fontDescriptor.symbolicTraits.union([.traitBold])
-            guard let descriptor = font.fontDescriptor.withSymbolicTraits(traits) else { break }
-            return [.font: UIFont(descriptor: descriptor, size: font.pointSize)]
-        case .underline:
-            return [.underlineStyle: NSUnderlineStyle.single.rawValue]
-        case .ruby:
-            break
-        case .rubyText:
-            break
-        case .voice:
-            break
-        case .language:
-            break
-        case .text(_):
-            break
-        case .timestamp(_):
-            break
-        case .root:
-            break
-        case .class:
-            break
-        }
-        return [:]
     }
 }

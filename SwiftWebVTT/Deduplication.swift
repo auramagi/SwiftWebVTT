@@ -26,7 +26,7 @@ public extension WebVTTParser {
                 .joined(separator: "\n")
             guard !text.isEmpty else { continue }
             shownLines = lines
-            filteredCues.append(WebVTT.Cue(timing: cue.timing, text: text))
+            filteredCues.append(WebVTT.Cue(timing: cue.timing, contents: WebVTT.Cue.Node(type: .text(text))))
         }
         return filteredCues
     }
