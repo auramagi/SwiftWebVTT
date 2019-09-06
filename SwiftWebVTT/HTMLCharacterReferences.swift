@@ -2,7 +2,7 @@ import Foundation
 
 public struct HTMLCharacterReferences {
     /// Entity names for character substitution.
-    /// - Example: ['gt': '>'], ['amp': '&']
+    /// - Example: ['amp': [38]], so that \&amp; will convert to & (ampersand, 38 = U+0026)
     struct ReferenceNamed: Codepoints, Decodable {
         typealias Index = String
         
@@ -11,7 +11,8 @@ public struct HTMLCharacterReferences {
     }
     
     /// Substitutes for unwanted unicode codepoints in the resulting conversion.
-    /// - Example: [0: 65533]
+    /// - Example:
+    /// [151: [8212]], so that \&#151; will convert to — (em dash, 8212 = U+2014)
     struct ReferenceSubstitute: Codepoints, Decodable {
         typealias Index = Int
         

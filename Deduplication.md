@@ -3,7 +3,7 @@
 ## Why?
 
 YouTube uses a different native format (SRV3) for captions, but their servers are able to convert to several different formats including WebVTT.
-However, for their ASR (automatic speech recognition) captions, when converting YouTube bakes in a presentation to simulate vertical wiping of captions line-by-line. 
+However, for their ASR (automatic speech recognition) captions, upon conversion YouTube bakes in a presentation style to simulate vertical wiping of captions line-by-line. 
 This results in duplicate cues, which is not an issue when presenting caption-by-caption, but makes content unreadable when extracting all text or presenting all captions at once.
 
 ## What?
@@ -11,23 +11,23 @@ This results in duplicate cues, which is not an issue when presenting caption-by
 These captions look like this:
 
 ```
------ #1 (normal duration)
+// Cue #1 (normal duration)
 [empty line]
 line1
 
------ #2 (10 ms)
+// Cue #2 (10 ms)
 line1
 [empty line]
 
------ #3 (normal duration)
+// Cue #3 (normal duration)
 line1
 line2
 
------ #4 (10 ms)
+// Cue #4 (10 ms)
 line2
 [empty line]
 
----- #5 (normal duration)
+// Cue #5 (normal duration)
 line2
 line3
 ```
