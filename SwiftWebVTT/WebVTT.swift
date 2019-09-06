@@ -4,7 +4,7 @@ public struct WebVTT {
         public let contents: Node
     }
     
-    /// Native timing in WebVTT. Measured in milliseconds.
+    /// Cue timings in milliseconds. Stored as integers for precision.
     public struct Timing {
         public let start: Int
         public let end: Int
@@ -26,12 +26,13 @@ public extension WebVTT.Cue {
         public let classes: [String]
         public let annotation: String?
         
-        public var children: [Node] = []
+        public var children: [Node]
         
-        internal init(type: NodeType, classes: [String] = [], annotation: String? = nil) {
+        public init(type: NodeType, classes: [String] = [], annotation: String? = nil, children: [Node] = []) {
             self.type = type
             self.classes = classes
             self.annotation = annotation
+            self.children = children
         }
     }
     
@@ -76,5 +77,40 @@ public extension WebVTT.Cue {
     
     func attributedText(baseFont: UIFont) -> NSAttributedString {
         return contents.attributedString(font: baseFont)
+    }
+}
+
+// MARK: - Debug string
+
+extension WebVTT.Cue.NodeType: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .root: return "_"
+        case .class: return "c"
+        case .italic: return "i"
+        case .bold: return "b"
+        case .underline: return "u"
+        case .ruby: return "ruby"
+        case .rubyText: return "rt"
+        case .voice: return "v"
+        case .language: return "lang"
+        case .text(let text): return text.debugDescription
+        case .timestamp(let timestamp): return "\\\(timestamp)\\"
+        }
+    }
+}
+
+extension WebVTT.Cue.Node: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        var result = ([type.debugDescription] + classes).joined(separator: ".")
+        
+        if let annotation = annotation {
+            result.append("(\(annotation.debugDescription))")
+        }
+        if !children.isEmpty {
+            result.append(children.debugDescription)
+        }
+        
+        return result
     }
 }

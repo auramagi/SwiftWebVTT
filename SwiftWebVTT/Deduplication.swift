@@ -31,3 +31,38 @@ public extension WebVTT {
         return WebVTT(cues: filteredCues)
     }
 }
+
+//func x(_ cue: WebVTT.Cue, prev: WebVTT.Cue) -> WebVTT.Cue {
+//
+//}
+
+public extension WebVTT.Cue.Node {
+    func splitChildrenInLines() -> [[WebVTT.Cue.Node]] {
+        var result: [[WebVTT.Cue.Node]] = []
+        var buffer: [WebVTT.Cue.Node] = []
+        
+        for node in children {
+            switch node.type {
+            case .text(let text):
+                text.components(separatedBy: .newlines)
+                    .enumerated()
+                    .forEach { i, line in
+                        if i > 0 {
+                            result.append(buffer)
+                            buffer = []
+                        }
+                        if !line.isEmpty {
+                            let node = WebVTT.Cue.Node(type: .text(line))
+                            buffer.append(node)
+                        }
+                    }
+            default: buffer.append(node)
+            }
+        }
+        if !buffer.isEmpty {
+            result.append(buffer)
+        }
+        
+        return result
+    }
+}

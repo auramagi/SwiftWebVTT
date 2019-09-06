@@ -31,6 +31,10 @@ class CueTextTreeParser {
     }
     
     private func attach(_ node: WebVTT.Cue.Node) {
+        if !node.type.isNestable,
+            let i = stack.firstIndex(where: { $0.type == node.type }) {
+            stack.removeLast(stack.count - i)
+        }
         current.children.append(node)
         guard !node.type.isLeaf else { return }
         stack.append(node)
@@ -136,6 +140,13 @@ fileprivate extension WebVTT.Cue.NodeType {
     var isLeaf: Bool {
         switch self {
         case .text(_), .timestamp(_): return true
+        default: return false
+        }
+    }
+    
+    var isNestable: Bool {
+        switch self {
+        case .class: return true
         default: return false
         }
     }
