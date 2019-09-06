@@ -16,7 +16,6 @@
 		A3819D3422EC2D9D00F15A56 /* entities_encoded.txt in Resources */ = {isa = PBXBuildFile; fileRef = A3819D3222EC2D9D00F15A56 /* entities_encoded.txt */; };
 		A3819D3522EC2D9D00F15A56 /* entities_decoded.txt in Resources */ = {isa = PBXBuildFile; fileRef = A3819D3322EC2D9D00F15A56 /* entities_decoded.txt */; };
 		A384747022EC352200E545A6 /* Deduplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = A384746F22EC352200E545A6 /* Deduplication.swift */; };
-		A384747222EC35AC00E545A6 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A384747122EC35AC00E545A6 /* Extensions.swift */; };
 		A384747422EC36A500E545A6 /* WebVTTParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A384747322EC36A500E545A6 /* WebVTTParser.swift */; };
 		A3B935CA22A8E4B400B0E066 /* references_substitutes.json in Resources */ = {isa = PBXBuildFile; fileRef = A3B935C922A8E4B400B0E066 /* references_substitutes.json */; };
 		A3B935D322A9051A00B0E066 /* Scanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B935D222A9051A00B0E066 /* Scanner.swift */; };
@@ -49,7 +48,6 @@
 		A3819D3222EC2D9D00F15A56 /* entities_encoded.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = entities_encoded.txt; sourceTree = "<group>"; };
 		A3819D3322EC2D9D00F15A56 /* entities_decoded.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = entities_decoded.txt; sourceTree = "<group>"; };
 		A384746F22EC352200E545A6 /* Deduplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Deduplication.swift; sourceTree = "<group>"; };
-		A384747122EC35AC00E545A6 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		A384747322EC36A500E545A6 /* WebVTTParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebVTTParser.swift; sourceTree = "<group>"; };
 		A3B935C922A8E4B400B0E066 /* references_substitutes.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = references_substitutes.json; sourceTree = "<group>"; };
 		A3B935D222A9051A00B0E066 /* Scanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scanner.swift; sourceTree = "<group>"; };
@@ -105,7 +103,6 @@
 				A3ECF30022FC7D5E00C9B298 /* CueTextTree.swift */,
 				A332BFF322A849DA009E47D5 /* HTMLCharacterReferences.swift */,
 				A3B935D222A9051A00B0E066 /* Scanner.swift */,
-				A384747122EC35AC00E545A6 /* Extensions.swift */,
 				A332BFF522A84A22009E47D5 /* references_named.json */,
 				A3B935C922A8E4B400B0E066 /* references_substitutes.json */,
 				A332BFE922A84954009E47D5 /* SwiftWebVTT.h */,
@@ -247,7 +244,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A384747222EC35AC00E545A6 /* Extensions.swift in Sources */,
 				A332BFF422A849DB009E47D5 /* HTMLCharacterReferences.swift in Sources */,
 				A384747422EC36A500E545A6 /* WebVTTParser.swift in Sources */,
 				A3B935D322A9051A00B0E066 /* Scanner.swift in Sources */,
