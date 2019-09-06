@@ -45,28 +45,23 @@ webVTT?.cues.map({ $0.attributedText(baseFont: font) }).forEach({ attributedText
 // text: NSAttributedString is all the text in the file in rich format
 ```
 
-#### Making automatically-generated WebVTT from YouTube readable
-
-YouTube has a different native format (SRV3) for captions, but their servers are able to convert to several different formats including WebVTT. However, for their ASR (automatic speech recognition) captions, YouTube bakes in a certain presentation that effectively duplicates cues.
-
-This doesn't have a negative effect when presenting caption-by-caption, but makes content unreadable when extracting all text or just presenting all captions at once.
-
-**Swift WebVTT** has a helper function to de-duplicate and reformat such files.
-
-```swift
-// var webVTT: WebVTT // A parsed file
-webVTT = webVtt.deduplicated()
-```
-
 #### HTML Character References
 
-The custom parser for HTML Character References can also be used standalone to decode text with HTML entities.
+The custom parser for HTML Character References can be used separately to decode text with HTML entities. Encoding is not supported.
 
 ```swift
 let text = "&#x48;&#x65;&#x6C;&#x6C;&#x6F;&comma;&#x20;&#x77;&#x6F;&#x72;&#x6C;&#x64;&excl;&#x20;&#x1F44B;"
 print(text.decodingHTMLEntities())
 // > "Hello, world! 👋"
 ```
+
+#### YouTube ASR captions
+
+YouTube serves WebVTT captions, but files created by their automatic speech recognition (ASR) have some quirks.
+
+**Swift WebVTT** has a helper function to de-duplicate and reformat such files. This function can be also used in general to filter out empty cues or empty lines in cues.
+
+See [Deduplication.md](/Deduplication.md) for details.
 
 
 ## Performance

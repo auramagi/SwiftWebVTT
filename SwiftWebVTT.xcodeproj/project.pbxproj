@@ -45,6 +45,7 @@
 		A332C02322A84E80009E47D5 /* SwiftWebVTTTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftWebVTTTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A332C02522A84E80009E47D5 /* SwiftWebVTTTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftWebVTTTests.swift; sourceTree = "<group>"; };
 		A332C02722A84E80009E47D5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A3471D2C2322129200BD3EF2 /* Deduplication.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Deduplication.md; sourceTree = "<group>"; };
 		A3819D3222EC2D9D00F15A56 /* entities_encoded.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = entities_encoded.txt; sourceTree = "<group>"; };
 		A3819D3322EC2D9D00F15A56 /* entities_decoded.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = entities_decoded.txt; sourceTree = "<group>"; };
 		A384746F22EC352200E545A6 /* Deduplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Deduplication.swift; sourceTree = "<group>"; };
@@ -79,6 +80,7 @@
 			children = (
 				A312ECE522EC5F98004BFD28 /* LICENSE */,
 				A312ECE422EC5F98004BFD28 /* README.md */,
+				A3471D2C2322129200BD3EF2 /* Deduplication.md */,
 				A332BFE822A84954009E47D5 /* SwiftWebVTT */,
 				A332C02422A84E80009E47D5 /* SwiftWebVTTTests */,
 				A332BFE722A84954009E47D5 /* Products */,

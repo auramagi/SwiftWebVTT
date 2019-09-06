@@ -1,3 +1,6 @@
+// Remove empty cues, empty lines, and duplicate lines if they follow some rules.
+// See Deduplication.md for details.
+
 import Foundation
 
 public extension WebVTT {
@@ -6,63 +9,97 @@ public extension WebVTT {
     /// Mainly for YouTube ASR captions.
     func deduplicated() -> WebVTT {
         var filteredCues: [WebVTT.Cue] = []
-        var shownLines: [Substring] = []
+        
+        var prevCueLines: [String] = []
         var lastEnd: Int = 0
         for cue in cues {
             let isConsecutive = lastEnd == cue.timing.start
             lastEnd = cue.timing.end
-            let lines: [Substring] = cue.text.split(separator: "\n")
+            
+            let lines = cue.contents.splitInLines()
+            let linesText = lines.map { $0.string() }
+            
+            // Ignore lines that are empty or are just whitespace
             var ignored = lines
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+                .map { $0.string().trimmingCharacters(in: .whitespaces).isEmpty }
+            
+            // Ignore the lines that were in the previous cue.
+            // Ignore only it the cues are consecutive and the line was at the same position or one lower.
+            // The checks are there to lower the chance of ignoring repeating lines when applied on normal captions,
+            // where repeated lines are expected for e.g. repeating dialogue.
             if isConsecutive {
                 for i in 0..<lines.count where !ignored[i] {
-                    let line = lines[i]
-                    ignored[i] = shownLines.item(at: i) == line || shownLines.item(at: i+1) == line
+                    let line = linesText[i]
+                    ignored[i] = prevCueLines.item(at: i) == line || prevCueLines.item(at: i+1) == line
                 }
             }
-            let text = zip(lines, ignored)
+            
+            let filteredLines = zip(lines, ignored)
                 .compactMap { (line, isIgnored) in return isIgnored ? nil : line }
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .joined(separator: "\n")
-            guard !text.isEmpty else { continue }
-            shownLines = lines
-            filteredCues.append(WebVTT.Cue(timing: cue.timing, contents: WebVTT.Cue.Node(type: .text(text))))
+            
+            let contents = WebVTT.Cue.Node(type: .root)
+            filteredLines.enumerated().forEach { i, line in
+                if i > 0 {
+                    contents.children.append(WebVTT.Cue.Node(type: .text("\n")))
+                }
+                contents.children.append(contentsOf: line.children)
+            }
+            
+            // Filter out cues that don't contain any characters
+            guard !contents.isEmpty else { continue }
+            prevCueLines = linesText
+            filteredCues.append(WebVTT.Cue(timing: cue.timing, contents: contents))
         }
+        
         return WebVTT(cues: filteredCues)
     }
 }
 
-//func x(_ cue: WebVTT.Cue, prev: WebVTT.Cue) -> WebVTT.Cue {
-//
-//}
+// MARK: - 
 
-public extension WebVTT.Cue.Node {
-    func splitChildrenInLines() -> [[WebVTT.Cue.Node]] {
-        var result: [[WebVTT.Cue.Node]] = []
+fileprivate extension WebVTT.Cue.Node {
+    // MARK: Deep split
+    func splitInLines() -> [WebVTT.Cue.Node] {
+        if case .text(let text) = type {
+            return text.components(separatedBy: .newlines) // This is the most intensive operation. But maybe that's inevitable?
+                .map { WebVTT.Cue.Node(type: .text($0)) }
+        }
+        
+        var result: [WebVTT.Cue.Node] = []
         var buffer: [WebVTT.Cue.Node] = []
         
-        for node in children {
-            switch node.type {
-            case .text(let text):
-                text.components(separatedBy: .newlines)
-                    .enumerated()
-                    .forEach { i, line in
-                        if i > 0 {
-                            result.append(buffer)
-                            buffer = []
-                        }
-                        if !line.isEmpty {
-                            let node = WebVTT.Cue.Node(type: .text(line))
-                            buffer.append(node)
-                        }
+        for child in children {
+            let split = child.splitInLines()
+            split.enumerated()
+                .forEach { i, line in
+                    if i > 0 {
+                        let node = emptyCopy()
+                        node.children = buffer
+                        result.append(node)
+                        buffer = []
                     }
-            default: buffer.append(node)
+                    buffer.append(line)
             }
         }
-        if !buffer.isEmpty {
-            result.append(buffer)
-        }
+        
+        let node = emptyCopy()
+        node.children = buffer
+        result.append(node)
         
         return result
+    }
+    
+    private func emptyCopy() -> WebVTT.Cue.Node {
+        return WebVTT.Cue.Node(type: type, classes: classes, annotation: annotation)
+    }
+    
+    // MARK: Text check
+    
+    var isEmpty: Bool {
+        if case .text(let text) = type { return text.isEmpty }
+        for child in children {
+            if !child.isEmpty { return false }
+        }
+        return true
     }
 }
